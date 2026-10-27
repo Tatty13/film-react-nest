@@ -79,7 +79,7 @@ export class FilmsMongoDbRepository implements FilmsRepository {
     return {
       id: session.id,
       daytime: session.daytime,
-      hall: String(session.hall),
+      hall: session.hall,
       rows: session.rows,
       seats: session.seats,
       price: session.price,

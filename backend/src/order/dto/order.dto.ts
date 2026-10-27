@@ -5,6 +5,7 @@ import {
   IsEmail,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Min,
   ValidateNested,
@@ -44,12 +45,14 @@ export class OrderResultDto extends OrderDto {
 }
 
 export class CreateOrderDto {
+  @IsOptional()
   @IsEmail()
-  email: string;
+  email?: string;
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  phone: string;
+  phone?: string;
 
   @IsArray()
   @ArrayNotEmpty()

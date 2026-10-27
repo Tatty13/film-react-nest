@@ -13,7 +13,7 @@ import {
 
 import { ResponseListDto } from 'src/common/dto/response.dto';
 
-export class CreateOrderTicketDto {
+export class TicketDto {
   @IsString()
   @IsNotEmpty()
   film: string;
@@ -57,8 +57,8 @@ export class CreateOrderDto {
   @IsArray()
   @ArrayNotEmpty()
   @ValidateNested({ each: true })
-  @Type(() => CreateOrderTicketDto)
-  tickets: CreateOrderTicketDto[];
+  @Type(() => TicketDto)
+  tickets: TicketDto[];
 }
 
 export class ResponseCreateOrderDto extends ResponseListDto<OrderResultDto> {}

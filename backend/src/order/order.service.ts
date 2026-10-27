@@ -14,9 +14,9 @@ import {
 import { toSeatKey } from 'src/common/utils/seat-key.util';
 import {
   CreateOrderDto,
-  CreateOrderTicketDto,
   ResponseCreateOrderDto,
   OrderResultDto,
+  TicketDto,
 } from './dto/order.dto';
 import { ScheduleDto } from 'src/films/dto/films.dto';
 
@@ -42,7 +42,7 @@ export class OrderService {
     }
 
     const bookings: Array<{
-      ticket: CreateOrderTicketDto;
+      ticket: TicketDto;
       daytime: string;
       price: number;
     }> = [];
@@ -75,9 +75,7 @@ export class OrderService {
     return { total: items.length, items };
   }
 
-  private async getValidatedSession(
-    ticket: CreateOrderTicketDto,
-  ): Promise<ScheduleDto> {
+  private async getValidatedSession(ticket: TicketDto): Promise<ScheduleDto> {
     const film = await this.filmsRepository.findById(ticket.film);
     if (!film) {
       throw new NotFoundException(`Фильм ${ticket.film} не найден`);
@@ -101,7 +99,7 @@ export class OrderService {
   }
 
   private toOrderResult(
-    ticket: CreateOrderTicketDto,
+    ticket: TicketDto,
     daytime: string,
     price: number,
   ): OrderResultDto {

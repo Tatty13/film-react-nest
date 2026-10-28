@@ -1,18 +1,18 @@
 import {
-  Inject,
   Injectable,
   OnApplicationShutdown,
   OnModuleInit,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import mongoose, { Connection } from 'mongoose';
-import { AppConfig } from 'src/app.config.provider';
 
 @Injectable()
 export class MongoDBService implements OnModuleInit, OnApplicationShutdown {
   private readonly connection: Connection;
 
-  constructor(@Inject('CONFIG') config: AppConfig) {
-    const { driver, url } = config.database;
+  constructor(configService: ConfigService) {
+    const driver = configService.getOrThrow<string>('database.driver');
+    const url = configService.getOrThrow<string>('database.url');
     if (driver !== 'mongodb') {
       throw new Error(`Неподдерживаемый драйвер базы данных: ${driver}`);
     }

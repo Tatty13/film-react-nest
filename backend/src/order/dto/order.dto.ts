@@ -2,9 +2,11 @@ import { Type } from 'class-transformer';
 import {
   ArrayNotEmpty,
   IsArray,
+  IsDateString,
   IsEmail,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Min,
@@ -32,15 +34,33 @@ export class TicketDto {
 }
 
 export class OrderDto {
+  @IsString()
+  @IsNotEmpty()
   film: string;
+
+  @IsString()
+  @IsNotEmpty()
   session: string;
+
+  @IsDateString()
   daytime: string; // UTC
+
+  @IsInt()
+  @Min(1)
   row: number;
+
+  @IsInt()
+  @Min(1)
   seat: number;
+
+  @IsNumber()
+  @Min(0)
   price: number;
 }
 
 export class OrderResultDto extends OrderDto {
+  @IsString()
+  @IsNotEmpty()
   id: string;
 }
 

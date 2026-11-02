@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 
-import { FilmRepositoryModule } from 'src/repository/film/film.repository.module';
+import { FilmRepositoryModule } from 'src/repository/film.repository.module';
 import { FilmsController } from './films.controller';
 import { FilmsService } from './films.service';
 

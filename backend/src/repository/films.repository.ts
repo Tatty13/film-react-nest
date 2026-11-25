@@ -11,6 +11,7 @@ export interface FilmsRepository {
   findAll(): Promise<FilmDto[]>;
   findById(id: string): Promise<FilmWithScheduleDto | null>;
   reserveSeat(params: ReserveSeatParams): Promise<boolean>;
+  reserveSeats(params: ReserveSeatParams[]): Promise<boolean>;
 }
 
 export const FILMS_REPOSITORY = 'FILMS_REPOSITORY';

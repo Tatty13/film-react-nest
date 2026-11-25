@@ -3,7 +3,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   FILMS_REPOSITORY,
   FilmsRepository,
-} from 'src/repository/film/films.repository';
+} from 'src/repository/films.repository';
 import { GetFilmScheduleDto, GetFilmsDto } from './dto/films.dto';
 
 @Injectable()

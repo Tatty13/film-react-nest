@@ -1,36 +1,37 @@
 # FILM!
 
-## Установка
+## Бэкенд
 
-### MongoDB
+Бэкенд использует PostgreSQL. Установите зависимости:
 
-Установите MongoDB скачав дистрибутив с официального сайта или с помощью пакетного менеджера вашей ОС. Также можно воспользоваться Docker (см. ветку `feat/docker`.
+```bash
+cd backend
+npm ci
+```
 
-Выполните скрипт `test/mongodb_initial_stub.js` в консоли `mongo`.
+Создайте в папке `backend` файл `.env` на основе `.env.example` и укажите
+параметры подключения к PostgreSQL:
 
-### Бэкенд
+- `DATABASE_HOST`
+- `DATABASE_PORT`
+- `DATABASE_NAME`
+- `DATABASE_USERNAME`
+- `DATABASE_PASSWORD`
 
-Перейдите в папку с исходным кодом бэкенда
+Значение`DATABASE_DRIVER` должно быть `postgres`.
 
-`cd backend`
+SQL-файлы в `backend/test` содержат схему базы данных и тестовые данные фильмов
+и сеансов.
 
-Установите зависимости (точно такие же, как в package-lock.json) помощью команд
+Запустите бэкенд в режиме разработки:
 
-`npm ci` или `yarn install --frozen-lockfile`
+```bash
+npm run start:dev
+```
 
-Создайте `.env` файл из примера `.env.example`, в нём укажите:
+Проверки линтера и сборки:
 
-* `DATABASE_DRIVER` - тип драйвера СУБД - в нашем случае это `mongodb` 
-* `DATABASE_URL` - адрес СУБД MongoDB, например `mongodb://127.0.0.1:27017/practicum`.  
-
-MongoDB должна быть установлена и запущена.
-
-Запустите бэкенд:
-
-`npm start:debug`
-
-Для проверки отправьте тестовый запрос с помощью Postman или `curl`.
-
-
-
-
+```bash
+npm run lint
+npm run build
+```

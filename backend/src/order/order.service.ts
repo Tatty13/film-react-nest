@@ -10,7 +10,7 @@ import { randomUUID } from 'node:crypto';
 import {
   FILMS_REPOSITORY,
   FilmsRepository,
-} from 'src/repository/film/films.repository';
+} from 'src/repository/films.repository';
 import { toSeatKey } from 'src/common/utils/seat-key.util';
 import {
   CreateOrderDto,
@@ -56,21 +56,21 @@ export class OrderService {
       });
     }
 
-    const items: OrderResultDto[] = [];
-    for (const booking of bookings) {
-      const { ticket, daytime, price } = booking;
-      const reserved = await this.filmsRepository.reserveSeat({
+    const reserved = await this.filmsRepository.reserveSeats(
+      bookings.map(({ ticket }) => ({
         filmId: ticket.film,
         sessionId: ticket.session,
         row: ticket.row,
         seat: ticket.seat,
-      });
-      if (!reserved) {
-        throw new ConflictException('Указанное место уже забронировано');
-      }
-
-      items.push(this.toOrderResult(ticket, daytime, price));
+      })),
+    );
+    if (!reserved) {
+      throw new ConflictException('Указанное место уже забронировано');
     }
+
+    const items = bookings.map(({ ticket, daytime, price }) =>
+      this.toOrderResult(ticket, daytime, price),
+    );
 
     return { total: items.length, items };
   }

@@ -6,6 +6,7 @@ import * as path from 'node:path';
 import { FilmsModule } from './films/films.module';
 import { OrderModule } from './order/order.module';
 import { FilmRepositoryModule } from './repository/film.repository.module';
+import { LoggerModule } from './logger/logger.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { FilmRepositoryModule } from './repository/film.repository.module';
       isGlobal: true,
       cache: true,
     }),
+    LoggerModule,
     FilmRepositoryModule,
     ServeStaticModule.forRoot({
       rootPath: path.join(__dirname, '..', 'public'),

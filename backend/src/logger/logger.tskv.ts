@@ -1,8 +1,14 @@
-import { LoggerService, Injectable } from '@nestjs/common';
+import { Injectable, LogLevel } from '@nestjs/common';
+
+import { BaseLogger } from './logger-base';
 
 @Injectable()
-export class TskvLogger implements LoggerService {
-  formatMessage(level: string, message: unknown, ...optionalParams: unknown[]) {
+export class TskvLogger extends BaseLogger {
+  protected formatMessage(
+    level: LogLevel,
+    message: unknown,
+    optionalParams: unknown[],
+  ) {
     const fields = [
       `level=${this.formatValue(level)}`,
       `message=${this.formatValue(message)}`,
@@ -37,25 +43,5 @@ export class TskvLogger implements LoggerService {
       .replace(/\t/g, '\\t')
       .replace(/\r/g, '\\r')
       .replace(/\n/g, '\\n');
-  }
-
-  log(message: unknown, ...optionalParams: unknown[]) {
-    console.log(this.formatMessage('log', message, ...optionalParams));
-  }
-
-  error(message: unknown, ...optionalParams: unknown[]) {
-    console.log(this.formatMessage('error', message, ...optionalParams));
-  }
-
-  warn(message: unknown, ...optionalParams: unknown[]) {
-    console.log(this.formatMessage('warn', message, ...optionalParams));
-  }
-
-  debug?(message: unknown, ...optionalParams: unknown[]) {
-    console.log(this.formatMessage('debug', message, ...optionalParams));
-  }
-
-  verbose?(message: unknown, ...optionalParams: unknown[]) {
-    console.log(this.formatMessage('verbose', message, ...optionalParams));
   }
 }

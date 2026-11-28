@@ -1,25 +1,42 @@
+import { LogLevel } from '@nestjs/common';
+
+import { LogType } from './logger-base';
 import { TskvLogger } from './logger.tskv';
 
-const logMethods = [
+const logMethods: {
+  level: LogLevel;
+  output: LogType;
+  write: (logger: TskvLogger) => void;
+}[] = [
   {
     level: 'log',
+    output: 'log',
     write: (logger: TskvLogger) => logger.log('message log', 'context'),
   },
   {
     level: 'error',
+    output: 'error',
     write: (logger: TskvLogger) => logger.error('message error', 'context'),
   },
   {
     level: 'warn',
+    output: 'warn',
     write: (logger: TskvLogger) => logger.warn('message warn', 'context'),
   },
   {
     level: 'debug',
+    output: 'debug',
     write: (logger: TskvLogger) => logger.debug('message debug', 'context'),
   },
   {
     level: 'verbose',
+    output: 'log',
     write: (logger: TskvLogger) => logger.verbose('message verbose', 'context'),
+  },
+  {
+    level: 'fatal',
+    output: 'error',
+    write: (logger: TskvLogger) => logger.fatal?.('message fatal', 'context'),
   },
 ];
 
@@ -29,46 +46,58 @@ describe('TskvLogger', () => {
   });
 
   it('форматирует поля как пары ключ-значение, разделённые табуляцией', () => {
+    const output = jest.spyOn(console, 'log').mockImplementation();
     const logger = new TskvLogger();
 
-    expect(logger.formatMessage('info', 'started', { id: 1 })).toBe(
-      'level=info\tmessage=started\toptionalParams=[{"id":1}]',
+    logger.log('started', { id: 1 });
+
+    expect(output).toHaveBeenCalledWith(
+      'level=log\tmessage=started\toptionalParams=[{"id":1}]',
     );
   });
 
   it('экранирует обратные слеши и управляющие символы', () => {
+    const output = jest.spyOn(console, 'log').mockImplementation();
     const logger = new TskvLogger();
 
-    expect(logger.formatMessage('info', 'a\\b\tc\r\nd')).toBe(
-      'level=info\tmessage=a\\\\b\\tc\\r\\nd',
-    );
+    logger.log('a\\b\tc\r\nd');
+
+    expect(output).toHaveBeenCalledWith('level=log\tmessage=a\\\\b\\tc\\r\\nd');
   });
 
   it('форматирует ошибки через стек вызовов', () => {
+    const output = jest.spyOn(console, 'error').mockImplementation();
     const logger = new TskvLogger();
+    const error = new Error('failed');
 
-    expect(logger.formatMessage('error', new Error('failed'))).toMatch(
-      /^level=error\tmessage=Error: failed(?:\\n|$)/,
+    logger.error(error);
+
+    expect(output).toHaveBeenCalledWith(
+      expect.stringMatching(/^level=error\tmessage=Error: failed(?:\\n|$)/),
     );
   });
 
   it('преобразует циклические объекты в строку при ошибке сериализации', () => {
+    const output = jest.spyOn(console, 'log').mockImplementation();
     const logger = new TskvLogger();
     const circular: { self?: unknown } = {};
     circular.self = circular;
 
-    expect(logger.formatMessage('info', circular)).toBe(
-      'level=info\tmessage=[object Object]',
-    );
+    logger.log(circular);
+
+    expect(output).toHaveBeenCalledWith('level=log\tmessage=[object Object]');
   });
 
-  it.each(logMethods)('выводит записи уровня $level', ({ level, write }) => {
-    const output = jest.spyOn(console, 'log').mockImplementation();
+  it.each(logMethods)(
+    'выводит записи уровня $level через console.$output',
+    ({ level, output: outputMethod, write }) => {
+      const output = jest.spyOn(console, outputMethod).mockImplementation();
 
-    write(new TskvLogger());
+      write(new TskvLogger());
 
-    expect(output).toHaveBeenCalledWith(
-      `level=${level}\tmessage=message ${level}\toptionalParams=["context"]`,
-    );
-  });
+      expect(output).toHaveBeenCalledWith(
+        `level=${level}\tmessage=message ${level}\toptionalParams=["context"]`,
+      );
+    },
+  );
 });

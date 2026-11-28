@@ -1,0 +1,97 @@
+services:
+  frontend-build:
+    build:
+      context: ./frontend
+    image: ghcr.io/tatty13/film-react-nest/frontend:latest
+    network_mode: none
+    volumes:
+      - frontend-dist:/dist
+    restart: "no"
+
+  database:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME:?Set DATABASE_USERNAME in backend/.env.production}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?Set DATABASE_PASSWORD in backend/.env.production}
+      POSTGRES_DB: ${DATABASE_NAME:-prac}
+    volumes:
+      - database-data:/var/lib/postgresql/data
+      - ./backend/test/prac.init.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./backend/test/prac.films.sql:/docker-entrypoint-initdb.d/02-films.sql:ro
+      - ./backend/test/prac.shedules.sql:/docker-entrypoint-initdb.d/03-schedules.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - film
+
+  backend:
+    image: ghcr.io/tatty13/film-react-nest/backend:latest
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.production
+    environment:
+      DATABASE_HOST: database
+      DATABASE_PORT: "5432"
+      PORT: "3000"
+    expose:
+      - "3000"
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/afisha/films"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - film
+
+  nginx:
+    image: ghcr.io/tatty13/film-react-nest/nginx:latest
+    build:
+      context: ./nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - frontend-dist:/usr/share/nginx/html:ro
+    depends_on:
+      frontend-build:
+        condition: service_completed_successfully
+      backend:
+        condition: service_healthy
+    networks:
+      - film
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?Set PGADMIN_DEFAULT_EMAIL in backend/.env.production}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?Set PGADMIN_DEFAULT_PASSWORD in backend/.env.production}
+      PGADMIN_DISABLE_POSTFIX: "true"
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - film
+
+volumes:
+  frontend-dist:
+  database-data:
+  pgadmin-data:
+
+networks:
+  film:
+    driver: bridge

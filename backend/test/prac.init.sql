@@ -1,7 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-create database prac with owner student;
-
 create table public.films
 (
     id uuid default uuid_generate_v4() not null
